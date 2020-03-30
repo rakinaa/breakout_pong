@@ -1,5 +1,7 @@
 const Paddle = require("./paddle");
 const Ball = require("./ball");
+const Brick = require("./brick");
+const Util = require("./util");
 
 class Game {
   constructor() {
@@ -7,7 +9,14 @@ class Game {
     this.balls = [];
     this.bricks = [];
 
+    this.p1Lives = 5;
+    this.p2Lives = 5;
+
+    this.x_dim = Game.X_DIM;
+    this.y_dim = Game.Y_DIM;
+
     this.addBalls();
+    this.addBricks();
   }
 
   add(object) {
@@ -15,6 +24,8 @@ class Game {
       this.paddles.push(object);
     } else if (object instanceof Ball) {
       this.balls.push(object);
+    } else if (object instanceof Brick) {
+      this.bricks.push(object);
     }
   }
 
@@ -30,8 +41,49 @@ class Game {
   }
   
   addBalls() {
-    for (let i = 0; i < Game.NUM_BALLS; i++) {
-      this.add(new Ball({ game: this }));
+    // for (let i = 0; i < Game.NUM_BALLS; i++) {
+    //   this.add(new Ball({ game: this }));
+    // }
+    const addBall = () => {
+      if (this.balls.length < Game.NUM_BALLS) {
+        this.add(new Ball({ game: this }));
+      }
+    }
+    setInterval(addBall, 3000);
+  }
+  
+  addBricks() {
+    let x = 0;
+
+    for (let i = 0; i < Game.NUM_BRICK_ROWS; i++) {
+      let y = 0;
+      for (let i = 0; i < Game.NUM_BRICKS + 1; i++) {
+        this.add(new Brick({ 
+          game: this, 
+          isLeft: true,
+          width: Game.GAP/Game.NUM_BRICK_ROWS,
+          height: Game.Y_DIM/Game.NUM_BRICKS,
+          pos: [x,y],
+        }));
+        y += Game.Y_DIM/Game.NUM_BRICKS;
+      }
+      x += Game.GAP/Game.NUM_BRICK_ROWS
+    }
+
+    x = Game.X_DIM - Game.GAP/Game.NUM_BRICK_ROWS;
+    for (let i = 0; i < Game.NUM_BRICK_ROWS; i++) {
+      let y = 0;
+      for (let i = 0; i < Game.NUM_BRICKS + 1; i++) {
+        this.add(new Brick({ 
+          game: this, 
+          isLeft: false,
+          width: Game.GAP/Game.NUM_BRICK_ROWS,
+          height: Game.Y_DIM/Game.NUM_BRICKS,
+          pos: [x,y],
+        }));
+        y += Game.Y_DIM/Game.NUM_BRICKS;
+      }
+      x -= Game.GAP/Game.NUM_BRICK_ROWS
     }
   }
 
@@ -40,8 +92,10 @@ class Game {
   }
 
   step(delta) {
-    this.moveObjects(delta);
-    this.checkCollisions();
+    if (!this.gameOver()) {
+      this.moveObjects(delta);
+      this.checkCollisions();
+    }
   }
 
   draw(c) {
@@ -49,9 +103,14 @@ class Game {
     c.fillStyle = Game.BG_COLOR;
     c.fillRect(0, 0, Game.X_DIM, Game.Y_DIM);
 
-    this.allObjects().forEach(function(object) {
-      object.draw(c);
-    });
+    if (!this.gameOver()) {
+      this.allObjects().forEach(function(object) {
+        object.draw(c);
+      });
+    }
+
+    c.fillText(`Lives: ${this.p1Lives}`, 100, 40);
+    c.fillText(`Lives: ${this.p1Lives}`, Game.X_DIM-200, 40);
   }
 
   moveObjects(delta) {
@@ -95,7 +154,22 @@ class Game {
         // }
       }
     }
+  }
 
+  remove(object) {
+    if (object instanceof Brick) {
+      this.bricks.splice(this.bricks.indexOf(object), 1);
+    } else if (object instanceof Ball) {
+      this.balls.splice(this.balls.indexOf(object), 1);
+    }
+  }
+
+  gameOver() {
+    if (this.p1Lives <= 0 || this.p2Lives <= 0) {
+      return this.p1Lives > 0 ? "player 1 wins" : "player 2 wins";
+    } else {
+      return false;
+    }
   }
 }
 
@@ -103,6 +177,10 @@ Game.BG_COLOR = "#000000";
 Game.X_DIM = 1000;
 Game.Y_DIM = 600;
 Game.FPS = 32;
-Game.NUM_BALLS = 5;
+Game.NUM_BALLS = 7;
+Game.NUM_BRICK_ROWS = 3;
+Game.NUM_BRICKS = 8;
+
+Game.GAP = 30;
 
 module.exports = Game;

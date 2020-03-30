@@ -14,9 +14,9 @@ class Paddle extends MovingObject {
     options.color = DEFAULTS.COLOR;
     // options.pos = options.pos || options.game.randomPosition();
     if (options.isLeft) {
-      options.pos = [30,20];
+      options.pos = [40,20];
     } else {
-      options.pos = [(options.canvasWidth - DEFAULTS.WIDTH) - 30, 300]
+      options.pos = [(options.canvasWidth - DEFAULTS.WIDTH) - 40, 300]
     }
     options.height = DEFAULTS.HEIGHT;
     options.width = DEFAULTS.WIDTH;
@@ -47,6 +47,16 @@ class Paddle extends MovingObject {
       this.vel[1] = 0;
     }
 
+  }
+
+  getClosestBall() {
+    let closestBall = this.game.balls[0];
+    for (const ball of this.game.balls) {
+      if (ball.pos[0] > closestBall.pos[0] && ball.pos[0]  < this.pos[0] && ball.vel[0] > 0) {
+        closestBall = ball;
+      }
+    }
+    return closestBall ? closestBall.pos[1] : 200;
   }
 }
 
