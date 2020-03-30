@@ -110,7 +110,7 @@ class Game {
     }
 
     c.fillText(`Lives: ${this.p1Lives}`, 100, 40);
-    c.fillText(`Lives: ${this.p1Lives}`, Game.X_DIM-200, 40);
+    c.fillText(`Lives: ${this.p2Lives}`, Game.X_DIM-200, 40);
   }
 
   moveObjects(delta) {
